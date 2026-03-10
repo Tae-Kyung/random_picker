@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>시스템 분석 설계 - 발표자 랜덤 추첨기</title>
+    <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@400;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="app-container">
+        <header>
+            <div class="header-top">
+                <h1>시스템 분석 설계</h1>
+                <button id="settingsBtn" class="icon-btn" title="설정">⚙️</button>
+            </div>
+            <h2>발표자 랜덤 추첨기</h2>
+        </header>
+
+        <main>
+            <div class="display-board" id="displayBoard">
+                <div class="status-badge" id="statusBadge">READY</div>
+                <div class="main-text" id="mainText">버튼을 눌러<br>추첨을 시작하세요!</div>
+                <div class="sub-text" id="subText"></div>
+            </div>
+            
+            <button id="drawBtn" class="draw-btn">추첨 시작!</button>
+        </main>
+
+        <section class="results-section">
+            <div class="results-header">
+                <h3>선발 현황</h3>
+                <button id="resetBtn" class="reset-btn">초기화</button>
+            </div>
+            <div class="results-grid" id="resultsGrid">
+                <!-- 결과 카드가 여기에 생성됩니다 -->
+            </div>
+        </section>
+
+        <!-- Settings Modal -->
+        <div id="settingsModal" class="modal-overlay hidden">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3>팀원 정보 설정</h3>
+                    <button id="closeModalBtn" class="icon-btn" title="닫기">❌</button>
+                </div>
+                <div class="modal-body">
+                    <p class="help-text">아래 입력창에 팀 정보를 입력하세요. <br>형식: <code>조이름: 멤버1, 멤버2, 멤버3...</code> (콜론으로 조 이름 구분, 각 조는 줄바꿈으로 구분)</p>
+                    <textarea id="groupsInput" placeholder="예:&#10;1조: 홍길동, 김철수&#10;2조: 이영희, 박지성" spellcheck="false"></textarea>
+                </div>
+                <div class="modal-footer">
+                    <button id="saveGroupsBtn" class="primary-btn">저장 및 적용하기</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script src="app.js"></script>
+</body>
+</html>
