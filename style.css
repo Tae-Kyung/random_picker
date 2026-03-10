@@ -311,14 +311,20 @@ h2 {
     opacity: 1;
 }
 
-#settingsBtn {
+.header-controls {
     position: absolute;
     right: 0;
     top: 50%;
     transform: translateY(-50%);
+    display: flex;
+    gap: 0.5rem;
 }
+
 #settingsBtn:hover {
-    transform: translateY(-50%) rotate(30deg) scale(1.1);
+    transform: rotate(30deg) scale(1.1);
+}
+#bgmBtn:hover {
+    transform: scale(1.1);
 }
 
 .modal-overlay {

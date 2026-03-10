@@ -98,6 +98,83 @@ function playTada() {
     osc2.stop(now + 1.5);
 }
 
+let isBgmPlaying = false;
+let bgmOsc = null;
+let bgmGain = null;
+let bgmLfo = null;
+
+function toggleBgm() {
+    if (audioCtx.state === 'suspended') audioCtx.resume();
+    
+    if (isBgmPlaying) {
+        stopBgm();
+        document.getElementById('bgmBtn').textContent = '🔇';
+    } else {
+        startBgm();
+        document.getElementById('bgmBtn').textContent = '🔊';
+    }
+}
+
+function startBgm() {
+    if (bgmOsc) return;
+    
+    bgmOsc = audioCtx.createOscillator();
+    bgmGain = audioCtx.createGain();
+    bgmLfo = audioCtx.createOscillator();
+    const lfoGain = audioCtx.createGain();
+    const filter = audioCtx.createBiquadFilter();
+    
+    bgmOsc.type = 'sawtooth';
+    bgmOsc.frequency.setValueAtTime(55, audioCtx.currentTime); // Low A
+    
+    filter.type = 'lowpass';
+    filter.frequency.setValueAtTime(200, audioCtx.currentTime);
+    
+    bgmLfo.type = 'sine';
+    bgmLfo.frequency.setValueAtTime(0.5, audioCtx.currentTime); // Pulse every 2 seconds
+    
+    lfoGain.gain.setValueAtTime(300, audioCtx.currentTime); // Filter cutoff modulation depth
+    
+    bgmLfo.connect(lfoGain);
+    lfoGain.connect(filter.frequency);
+    
+    bgmGain.gain.setValueAtTime(0.15, audioCtx.currentTime); // Overall volume
+    
+    bgmOsc.connect(filter);
+    filter.connect(bgmGain);
+    bgmGain.connect(audioCtx.destination);
+    
+    bgmOsc.start();
+    bgmLfo.start();
+    isBgmPlaying = true;
+}
+
+function stopBgm() {
+    if (bgmOsc) {
+        const now = audioCtx.currentTime;
+        bgmGain.gain.cancelScheduledValues(now);
+        bgmGain.gain.setValueAtTime(bgmGain.gain.value, now);
+        bgmGain.gain.exponentialRampToValueAtTime(0.001, now + 1);
+        
+        const osc = bgmOsc;
+        const lfo = bgmLfo;
+        const gain = bgmGain;
+        setTimeout(() => {
+            try {
+                osc.stop();
+                lfo.stop();
+                osc.disconnect();
+                gain.disconnect();
+            } catch(e) {}
+        }, 1000);
+        
+        bgmOsc = null;
+        bgmLfo = null;
+        bgmGain = null;
+    }
+    isBgmPlaying = false;
+}
+
 const drawBtn = document.getElementById('drawBtn');
 const resetBtn = document.getElementById('resetBtn');
 const statusBadge = document.getElementById('statusBadge');
@@ -112,6 +189,7 @@ const closeModalBtn = document.getElementById('closeModalBtn');
 const saveGroupsBtn = document.getElementById('saveGroupsBtn');
 const settingsModal = document.getElementById('settingsModal');
 const groupsInput = document.getElementById('groupsInput');
+const bgmBtn = document.getElementById('bgmBtn');
 
 function init() {
     renderResultsGrid();
@@ -121,6 +199,7 @@ function init() {
     settingsBtn.addEventListener('click', openSettings);
     closeModalBtn.addEventListener('click', closeSettings);
     saveGroupsBtn.addEventListener('click', saveSettings);
+    bgmBtn.addEventListener('click', toggleBgm);
     
     // Close modal when clicking outside
     settingsModal.addEventListener('click', (e) => {
@@ -173,6 +252,13 @@ async function startSequence() {
     subText.textContent = '';
     
     try {
+        if (isBgmPlaying && bgmLfo) {
+            const now = audioCtx.currentTime;
+            bgmLfo.frequency.exponentialRampToValueAtTime(8, now + 5); // Speed up
+            bgmOsc.frequency.exponentialRampToValueAtTime(110, now + 5); // Pitch up
+            bgmGain.gain.exponentialRampToValueAtTime(0.3, now + 2); // Volume up
+        }
+
         // Step 1: Roulete for grouping
         const targetGroup = await rouletteEffect(unpickedGroups.map(g => g.name), 2000, 50, playTick);
         playDing(); // Short ding when group is chosen
@@ -202,6 +288,13 @@ async function startSequence() {
         mainText.innerHTML = `${targetGroup}<br><span style="color: var(--primary-color)">${targetMember}</span>`;
         subText.textContent = '발표자로 선정되었습니다!';
         
+        if (isBgmPlaying && bgmLfo) {
+            const now = audioCtx.currentTime;
+            bgmLfo.frequency.linearRampToValueAtTime(0.5, now + 1);
+            bgmOsc.frequency.exponentialRampToValueAtTime(55, now + 1);
+            bgmGain.gain.exponentialRampToValueAtTime(0.15, now + 1);
+        }
+
         // Save and update UI
         state.selectedGroups.push({ groupId: groupObj.id, memberName: targetMember });
         updateResultCard(groupObj.id, targetMember);
